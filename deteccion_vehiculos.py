@@ -28,7 +28,7 @@ class CarDetector:
                 messagebox.showinfo("Información", "No se puede leer el frame del video o el video ha terminado")
                 break
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            cascade = cv2.CascadeClassifier('Proyecto/Archivos/cars.xml')
+            cascade = cv2.CascadeClassifier('cars.xml')
             cars = cascade.detectMultiScale(gray, 1.1, 1)
             for (x, y, w, h) in cars:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
@@ -38,6 +38,7 @@ class CarDetector:
 
         cap.release()
         cv2.destroyAllWindows()
+
     
     def detect_in_realtime(self):
         realtimevideo = cv2.VideoCapture(0)
@@ -90,7 +91,7 @@ class App:
 
 
 if __name__ == "__main__":
-    cascade_path = os.path.abspath('Proyecto/Archivos/cars.xml')
+    cascade_path = os.path.abspath('Archivos/vehicle.xml')
     detector = CarDetector(cascade_path)
 
     root = tk.Tk()
