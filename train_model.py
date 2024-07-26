@@ -66,5 +66,42 @@ train_gen = data_generator(train_annotations, batch_size, (224, 224))
 valid_gen = data_generator(valid_annotations, batch_size, (224, 224))
 test_gen = data_generator(test_annotations, batch_size, (224, 224))
 
+train_steps_per_epoch = len(train_annotations) // batch_size
+valid_steps_per_epoch = len(valid_annotations) // batch_size
+test_steps_per_epoch = len(test_annotations) // batch_size
 
+# Definición del modelo
+HEIGHT, WIDTH = 224, 224
+image_input = Input(shape=(HEIGHT, WIDTH, 3))
+
+base_model = ResNet50(input_tensor=image_input, include_top=False, weights='imagenet')
+x = base_model.output
+x = Flatten()(x)
+x = Dense(128, activation='relu')(x)
+x = Dropout(0.3)(x)
+x = Dense(128, activation='relu')(x)
+x = Dropout(0.3)(x)
+predictions = Dense(1, activation='sigmoid')(x)  # Cambiado a 1 salida para clasificación binaria
+
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Congelar todas las capas de la base de ResNet50 excepto las últimas capas densas
+for layer in base_model.layers:
+    layer.trainable = False
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+checkpoint = ModelCheckpoint('finals_model.keras', monitor='val_accuracy', save_best_only=True, mode='max')
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True)
+
+history = model.fit(
+    train_gen,
+    epochs=50,
+    validation_data=valid_gen,
+    steps_per_epoch=train_steps_per_epoch,
+    validation_steps=valid_steps_per_epoch,
+    callbacks=[checkpoint, early_stopping]
+)
+
+model.save('finals_model.keras')
 
