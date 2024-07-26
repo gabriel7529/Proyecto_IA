@@ -105,3 +105,19 @@ history = model.fit(
 
 model.save('finals_model.keras')
 
+test_loss, test_acc = model.evaluate(test_gen, steps=test_steps_per_epoch)
+print(f'Test accuracy: {test_acc:.4f}')
+
+test_predictions = model.predict(test_gen, steps=test_steps_per_epoch)
+test_predictions = np.round(test_predictions).astype(int)
+
+test_labels = []
+for start in range(0, len(test_annotations), batch_size):
+    end = min(start + batch_size, len(test_annotations))
+    batch_data = test_annotations[start:end]
+    for idx, row in batch_data.iterrows():
+        label = 1 if row['label'] == 'space-occupied' else 0
+        test_labels.append(label)
+
+test_labels = np.array(test_labels[:len(test_predictions)])
+
